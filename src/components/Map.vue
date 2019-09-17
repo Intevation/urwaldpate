@@ -12,7 +12,6 @@ import Popup from "./Popup";
 import * as firebase from "firebase/app";
 
 // Add the Firebase products that you want to use
-import "firebase/auth";
 import "firebase/database";
 
 //https://github.com/KoRiGaN/Vue2Leaflet/issues/28
@@ -38,8 +37,7 @@ export default {
       messagingSenderId: process.env.VUE_APP_messagingSenderId,
       appId: pprocess.env.VUE_APP_messagingSenderId
     },
-    allCurrentFeatures: {},
-    allFeaturesShown: [],
+    rasterRef: {},
     dialog: false,
     selected: [],
     raster: {},
@@ -65,11 +63,21 @@ export default {
   }),
   watch: {
     raster: function() {
+      if (this.ebene instanceof L.Layer) {
+        console.log("remove");
+        this.ebene.remove();
+      }
       this.ebene = L.geoJSON(null, {
         onEachFeature: this.onEachFeatureClosure(
           this.defaultStyle,
           this.highlightStyle
-        )
+        ),
+        style: function(feature) {
+          switch (feature.properties.Pate) {
+            case "ja":
+              return { fillColor: "red" };
+          }
+        }
       });
       this.ebene.addData(this.raster);
       this.ebene.addTo(this.map);
@@ -78,7 +86,7 @@ export default {
     }
   },
   created() {
-    //this.fetchData();
+    //    this.fetchData();
     this.fetchDataFromFirebase();
   },
   mounted() {
@@ -116,16 +124,14 @@ export default {
   methods: {
     fetchDataFromFirebase() {
       firebase.initializeApp(this.firebaseConfig);
-
-      return firebase
-        .database()
-        .ref("/")
-        .once("value")
-        .then(
-          function(snapshot) {
-            this.raster = snapshot.val();
-          }.bind(this)
-        );
+      this.rasterRef = firebase.database().ref();
+      this.rasterRef.on(
+        "value",
+        function(dataSnapshot) {
+          console.log(dataSnapshot.val());
+          this.raster = dataSnapshot.val();
+        }.bind(this)
+      );
     },
     fetchData() {
       fetch("data/biesbeck.geojson")
