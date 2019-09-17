@@ -8,6 +8,12 @@
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import Popup from "./Popup";
+// Firebase App (the core Firebase SDK) is always required and must be listed first
+import * as firebase from "firebase/app";
+
+// Add the Firebase products that you want to use
+import "firebase/auth";
+import "firebase/database";
 
 //https://github.com/KoRiGaN/Vue2Leaflet/issues/28
 
@@ -23,6 +29,17 @@ export default {
   components: { Popup },
   props: {},
   data: () => ({
+    firebaseConfig: {
+      apiKey: process.env.VUE_APP_apiKey,
+      authDomain: process.env.VUE_APP_authDomain,
+      databaseURL: process.env.VUE_APP_databaseURL,
+      projectId: process.env.VUE_APP_projectId,
+      storageBucket: process.env.VUE_APP_storageBucket,
+      messagingSenderId: process.env.VUE_APP_messagingSenderId,
+      appId: pprocess.env.VUE_APP_messagingSenderId
+    },
+    allCurrentFeatures: {},
+    allFeaturesShown: [],
     dialog: false,
     selected: [],
     raster: {},
@@ -62,6 +79,15 @@ export default {
   },
   created() {
     this.fetchData();
+    firebase.initializeApp(this.firebaseConfig);
+
+    return firebase
+      .database()
+      .ref("features")
+      .once("value")
+      .then(function(snapshot) {
+        console.log(snapshot.val());
+      });
   },
   mounted() {
     let map = L.map("map", {
