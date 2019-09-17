@@ -1,31 +1,45 @@
 <template>
   <v-row justify="center">
-    <v-dialog v-model="dialog" max-width="525">
+    <v-dialog v-model="dialog" max-width="485">
       <v-card>
-        <v-card-title
-          class="headline"
-        >Ja, ich werde Urwald-Pate für {{this.selected.length*10}} Hektar</v-card-title>
+        <v-card-title class="headline">Ja, ich werde Urwald-Pate für {{hektar}} Hektar!</v-card-title>
 
-        <v-card-text>Ich schütze mit ({{this.selected.length}} mal 10) Euro monatlich Urwald von morgen im Biesenthaler Becken.</v-card-text>
+        <v-card-text>
+          Ich schütze mit
+          <strong>{{betrag}} Euro monatlich</strong> Urwald von morgen im Biesenthaler Becken.
+        </v-card-text>
 
-        <v-card-actions>
-          <div class="flex-grow-1"></div>
-
+        <v-card-actions class="justify-center">
           <v-btn
-            color="grey lighten-1"
+            small
+            outlined
+            color="#4de600"
             @click="$emit('update:dialog', false);"
           >Weitere Fläche wählen!</v-btn>
-
-          <v-btn color="#4de600" @click="klick">Jetzt Urwald-Paten werden!</v-btn>
+          <v-btn small color="#4de600" dark @click="klick">Jetzt Urwald-Paten werden!</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
   </v-row>
 </template>
 
+<style>
+.headline {
+  word-break: normal !important;
+}
+</style>
+
 <script>
 export default {
   props: { dialog: Boolean, selected: Array },
+  computed: {
+    betrag: function() {
+      return this.selected.length * 10;
+    },
+    hektar: function() {
+      return this.selected.length * 10;
+    }
+  },
   methods: {
     klick() {
       window.open(
