@@ -69,11 +69,12 @@ export default {
       center: [35.5322, 21.09375],
       zoom: 15,
       maxZoom: 18,
-      minZoom: 14,
+      minZoom: 13,
       //maxBounds: [[42, -46], [58, 67]],
       //maxBounds: [[0, -180], [0, 180]],
       fadeAnimation: false,
-      zoomControl: false
+      zoomControl: false,
+      doubleClickZoom: false
       // renderer: L.canvas()
     });
 
@@ -134,6 +135,7 @@ export default {
       }.bind(this);
     },
     klick(layer, RasterID) {
+      this.dialog = false;
       if (!this.selected.includes(RasterID)) {
         layer.setStyle(this.selectedStyle);
         this.selected.push(RasterID);
@@ -143,7 +145,7 @@ export default {
         });
         this.ebene.resetStyle(layer);
       }
-      if (this.selected.length > 0) {
+      if (this.selected.length != 0) {
         this.dialog = true;
       }
     }
