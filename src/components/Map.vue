@@ -78,16 +78,8 @@ export default {
     }
   },
   created() {
-    this.fetchData();
-    firebase.initializeApp(this.firebaseConfig);
-
-    return firebase
-      .database()
-      .ref("features")
-      .once("value")
-      .then(function(snapshot) {
-        console.log(snapshot.val());
-      });
+    //this.fetchData();
+    this.fetchDataFromFirebase();
   },
   mounted() {
     let map = L.map("map", {
@@ -122,6 +114,19 @@ export default {
     // });
   },
   methods: {
+    fetchDataFromFirebase() {
+      firebase.initializeApp(this.firebaseConfig);
+
+      return firebase
+        .database()
+        .ref("/")
+        .once("value")
+        .then(
+          function(snapshot) {
+            this.raster = snapshot.val();
+          }.bind(this)
+        );
+    },
     fetchData() {
       fetch("data/biesbeck.geojson")
         .then(data => {
