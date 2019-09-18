@@ -37,7 +37,7 @@ export default {
       return this.selected.length * 10;
     },
     hektar: function() {
-      return this.selected.length * 10;
+      return this.selected.length * 1;
     }
   },
   methods: {
