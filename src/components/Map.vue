@@ -195,6 +195,7 @@ export default {
           list[i] = snap.val();
           list[i].$id = snap.key; // assumes data is always an object
           // https://github.com/vuejs/vue/issues/2164#issuecomment-287022802
+          // CBD? Maybe with computed property?
           self.list=list.slice(0)
         }
       });
