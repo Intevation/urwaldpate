@@ -37,10 +37,11 @@ export default {
       messagingSenderId: process.env.VUE_APP_messagingSenderId,
       appId: pprocess.env.VUE_APP_messagingSenderId
     },
-    rasterRef: {},
+    db: {},
+    list: [],
+    featuresRef: {},
     dialog: false,
     selected: [],
-    raster: {},
     map: {},
     defaultStyle: {
       color: "grey",
@@ -62,27 +63,45 @@ export default {
     ebene: {}
   }),
   watch: {
-    raster: function() {
-      if (this.ebene instanceof L.Layer) {
-        console.log("remove");
-        this.ebene.remove();
-      }
-      this.ebene = L.geoJSON(null, {
-        onEachFeature: this.onEachFeatureClosure(
-          this.defaultStyle,
-          this.highlightStyle
-        ),
-        style: function(feature) {
-          switch (feature.properties.Pate) {
-            case "ja":
-              return { fillColor: "red" };
-          }
+    list: {
+      handler: function(newVal,oldVal) {
+        console.log(this.deep)
+        console.log("list_handler")
+        if (this.ebene instanceof L.Layer) {
+          console.log("remove Layer");
+          this.ebene.remove();
         }
-      });
-      this.ebene.addData(this.raster);
-      this.ebene.addTo(this.map);
-      this.map.fitBounds(this.ebene.getBounds());
-      this.map.setMaxBounds(this.ebene.getBounds());
+        this.ebene = L.geoJSON(null, {
+          onEachFeature: this.onEachFeatureClosure(
+            this.defaultStyle,
+            this.highlightStyle
+          ),
+          style: function(feature) {
+            switch (feature.properties.Pate) {
+              case "ja":
+                return { fillColor: "red" };
+            }
+          }
+        });
+
+        var bar = new Promise((resolve, reject) => {
+          this.list.forEach((value, index, array) => {
+            this.ebene.addData(value);
+            if (index === array.length - 1) resolve();
+          });
+        });
+
+        bar.then(() => {
+          this.ebene.addTo(this.map);
+          this.map.fitBounds(this.ebene.getBounds());
+          this.map.setMaxBounds(this.ebene.getBounds());
+        });
+      },
+      deep: true
+    }
+    ,
+    ebene: function(newVal,oldVal){
+      console.log("Ebene watcher")
     }
   },
   created() {
@@ -90,7 +109,7 @@ export default {
     this.fetchDataFromFirebase();
   },
   mounted() {
-    let map = L.map("map", {
+    this.map = L.map("map", {
       attributionControl: false,
       center: [35.5322, 21.09375],
       zoom: 15,
@@ -115,8 +134,7 @@ export default {
           "pk.eyJ1IjoiYmpvZXJuc2NoaWxiZXJnIiwiYSI6InRzOVZKeWsifQ.y20mr9o3MolFOUdTQekhUA",
         noWrap: true
       }
-    ).addTo(map);
-    this.map = map;
+    ).addTo(this.map);
     // map.on("moveend", function() {
     //   console.log(map.getCenter());
     // });
@@ -124,24 +142,122 @@ export default {
   methods: {
     fetchDataFromFirebase() {
       firebase.initializeApp(this.firebaseConfig);
-      this.rasterRef = firebase.database().ref();
-      this.rasterRef.on(
-        "value",
-        function(dataSnapshot) {
-          console.log(dataSnapshot.val());
-          this.raster = dataSnapshot.val();
-        }.bind(this)
-      );
-    },
-    fetchData() {
-      fetch("data/biesbeck.geojson")
-        .then(data => {
-          return data.json();
-        })
-        .then(json => {
-          this.raster = json;
-        })
-        .catch(err => console.error(err));
+      this.db = firebase.database();
+      //this.rasterRef = firebase.database().ref();
+      this.featuresRef = this.db.ref("/features");
+
+      this.list = getSynchronizedArray(this.featuresRef);
+
+      // similar to indexOf, but uses id to find element
+      function positionFor(list, key) {
+        for (var i = 0, len = list.length; i < len; i++) {
+          if (list[i].$id === key) {
+            return i;
+          }
+        }
+        return -1;
+      }
+
+      // using the Firebase API's prevChild behavior, we
+      // place each element in the list after it's prev
+      // sibling or, if prevChild is null, at the beginning
+      function positionAfter(list, prevChild) {
+        if (prevChild === null) {
+          return 0;
+        } else {
+          var i = positionFor(list, prevChild);
+          if (i === -1) {
+            return list.length;
+          } else {
+            return i + 1;
+          }
+        }
+      }
+
+      function syncChanges(list, ref) {
+        ref.on("child_added", function _add(snap, prevChild) {
+          var data = snap.val();
+          data.$id = snap.key; // assumes data is always an object
+          var pos = positionAfter(list, prevChild);
+          list.splice(pos, 0, data);
+        });
+
+        ref.on("child_removed", function _remove(snap) {
+          console.log("child_remove");
+          console.log(snap.val());
+          var i = positionFor(list, snap.key);
+          if (i > -1) {
+            list.splice(i, 1);
+          }
+        });
+
+        ref.on("child_changed", function _change(snap) {
+          console.log("child_changed");
+          console.log(snap.val());
+          var i = positionFor(list, snap.key);
+          if (i > -1) {
+            list[i] = snap.val();
+            list[i].$id = snap.key; // assumes data is always an object
+          }
+        });
+
+        ref.on("child_moved", function _move(snap, prevChild) {
+          var curPos = positionFor(list, snap.key);
+          if (curPos > -1) {
+            var data = list.splice(curPos, 1)[0];
+            var newPos = positionAfter(list, prevChild);
+            list.splice(newPos, 0, data);
+          }
+        });
+      }
+
+      function wrapLocalCrudOps(list, firebaseRef) {
+        // we can hack directly on the array to provide some convenience methods
+        list.$add = function(data) {
+          if (data.hasOwnProperty("$id")) {
+            delete data.$id;
+          }
+          return firebaseRef.push(data);
+        };
+
+        list.$remove = function(key) {
+          console.log("remove on firebase")
+          firebaseRef.child(key).remove();
+        };
+
+        list.$set = function(key, newData) {
+          console.log("update on firebase")
+          // make sure we don't accidentally push our $id prop
+          if (newData.hasOwnProperty("$id")) {
+            delete newData.$id;
+          }
+          firebaseRef.child(key).set(newData);
+        };
+
+        list.$indexOf = function(key) {
+          return positionFor(list, key); // positionFor in examples above
+        };
+      }
+
+      function getSynchronizedArray(firebaseRef) {
+        var list = [];
+        syncChanges(list, firebaseRef);
+        wrapLocalCrudOps(list, firebaseRef);
+        return list;
+      }
+      // add whole GeoJSON
+      // this.rasterRef.on(
+      //   "value",
+      //   function(dataSnapshot) {
+      //     console.log(dataSnapshot.val());
+      //     this.raster = dataSnapshot.val();
+      //   }.bind(this)
+      //);
+      // tut
+      //this.featuresRef.on("child_changed", snapshot => {
+      //  console.log("feature changed");
+      //  console.log(snapshot.val());
+      //});
     },
     onEachFeatureClosure(defaultStyle, highlightStyle) {
       self = this;
@@ -166,7 +282,7 @@ export default {
         });
         layer.on("click", function(e) {
           //this.setStyle(self.selectedStyle);
-          //console.log(e);
+          console.log(e.target.feature);
           self.klick(e.target, e.target.feature.properties.RasterID);
         });
       }.bind(this);
