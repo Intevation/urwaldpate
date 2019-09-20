@@ -64,9 +64,7 @@ export default {
   }),
   watch: {
     list: {
-      handler: function(newVal, oldVal) {
-        console.log(this.deep);
-        console.log("list_handler");
+      handler: function() {
         if (this.ebene instanceof L.Layer) {
           console.log("remove Layer");
           this.ebene.remove();
@@ -98,9 +96,6 @@ export default {
         });
       },
       deep: true
-    },
-    ebene: function(newVal, oldVal) {
-      console.log("Ebene watcher");
     }
   },
   created() {
@@ -179,8 +174,6 @@ export default {
       });
 
       ref.on("child_removed", function _remove(snap) {
-        console.log("child_remove");
-        console.log(snap.val());
         var i = self.positionFor(list, snap.key);
         if (i > -1) {
           list.splice(i, 1);
@@ -199,7 +192,7 @@ export default {
           // Due to limitations in JavaScript, Vue cannot detect the following changes to an array:
           // When you directly set an item with the index, e.g. vm.items[indexOfItem] = newValue
           // https://vuejs.org/v2/guide/list.html#Object-Change-Detection-Caveats
-          list.splice(i,1,snap.val())
+          list.splice(i, 1, snap.val());
           list[i].$id = snap.key; // assumes data is always an object
 
           //Alternatives:
