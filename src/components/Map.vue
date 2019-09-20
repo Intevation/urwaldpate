@@ -194,6 +194,8 @@ export default {
         if (i > -1) {
           list[i] = snap.val();
           list[i].$id = snap.key; // assumes data is always an object
+          // https://github.com/vuejs/vue/issues/2164#issuecomment-287022802
+          self.list=list.slice(0)
         }
       });
 
