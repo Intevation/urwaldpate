@@ -13,10 +13,10 @@
           <v-btn
             small
             outlined
-            color="#4de600"
+            color="rgb(118,184,40)"
             @click="$emit('update:dialog', false);"
           >Weitere Fläche wählen!</v-btn>
-          <v-btn small color="#4de600" dark @click="klick">Jetzt Urwald-Paten werden!</v-btn>
+          <v-btn small color="rgb(118,184,40)" dark @click="klick">Jetzt Urwald-Paten werden!</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -37,7 +37,7 @@ export default {
       return this.selected.length * 10;
     },
     hektar: function() {
-      return this.selected.length * 10;
+      return this.selected.length * 1;
     }
   },
   methods: {

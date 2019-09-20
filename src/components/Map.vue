@@ -117,18 +117,21 @@ export default {
       // renderer: L.canvas()
     });
 
-    L.tileLayer(
-      "https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}",
-      {
+    map.addControl(
+      L.control.attribution({
+        position: "bottomright",
+        prefix: false
+      })
+    );
+
+    L.tileLayer
+      .wms("https://tiles.maps.eox.at/?", {
+        layers: "s2cloudless_3857",
         attribution:
-          'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
-        maxZoom: 18,
-        id: "mapbox.streets",
-        accessToken:
-          "pk.eyJ1IjoiYmpvZXJuc2NoaWxiZXJnIiwiYSI6InRzOVZKeWsifQ.y20mr9o3MolFOUdTQekhUA",
-        noWrap: true
-      }
-    ).addTo(this.map);
+          '<a href="https://s2maps.eu" target="_blank">Sentinel-2 cloudless - https://s2maps.eu</a> by <a href="https://eox.at/" target="_blank">EOX IT Services GmbH</a> (Contains modified Copernicus Sentinel data 2017 & 2018)'
+      })
+      .addTo(map);
+    this.map = map;
     // map.on("moveend", function() {
     //   console.log(map.getCenter());
     // });
