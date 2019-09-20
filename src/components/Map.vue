@@ -192,11 +192,22 @@ export default {
         console.log(snap.val());
         var i = self.positionFor(list, snap.key);
         if (i > -1) {
-          list[i] = snap.val();
+          //list[i] = snap.val();
+          //list[i].$id = snap.key; // assumes data is always an object
+
+          // Caveats
+          // Due to limitations in JavaScript, Vue cannot detect the following changes to an array:
+          // When you directly set an item with the index, e.g. vm.items[indexOfItem] = newValue
+          // https://vuejs.org/v2/guide/list.html#Object-Change-Detection-Caveats
+          list.splice(i,1,snap.val())
           list[i].$id = snap.key; // assumes data is always an object
-          //perserve functions. May the best way?
-          self.list=[]
-          self.list=list
+
+          //Alternatives:
+          //self.list =Object.assign([],list)
+
+          //self.list=[]
+          //self.list=list
+
           //// https://github.com/vuejs/vue/issues/2164#issuecomment-287022802
           //// CBD? Maybe with computed property?
           //self.list=list.slice(0)
