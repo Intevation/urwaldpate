@@ -64,9 +64,9 @@ export default {
   }),
   watch: {
     list: {
-      handler: function(newVal,oldVal) {
-        console.log(this.deep)
-        console.log("list_handler")
+      handler: function(newVal, oldVal) {
+        console.log(this.deep);
+        console.log("list_handler");
         if (this.ebene instanceof L.Layer) {
           console.log("remove Layer");
           this.ebene.remove();
@@ -98,10 +98,9 @@ export default {
         });
       },
       deep: true
-    }
-    ,
-    ebene: function(newVal,oldVal){
-      console.log("Ebene watcher")
+    },
+    ebene: function(newVal, oldVal) {
+      console.log("Ebene watcher");
     }
   },
   created() {
@@ -145,119 +144,100 @@ export default {
       this.db = firebase.database();
       //this.rasterRef = firebase.database().ref();
       this.featuresRef = this.db.ref("/features");
-
-      this.list = getSynchronizedArray(this.featuresRef);
-
-      // similar to indexOf, but uses id to find element
-      function positionFor(list, key) {
-        for (var i = 0, len = list.length; i < len; i++) {
-          if (list[i].$id === key) {
-            return i;
-          }
+      this.list = this.getSynchronizedArray(this.featuresRef);
+    },
+    positionFor(list, key) {
+      for (var i = 0, len = list.length; i < len; i++) {
+        if (list[i].$id === key) {
+          return i;
         }
-        return -1;
       }
-
-      // using the Firebase API's prevChild behavior, we
-      // place each element in the list after it's prev
-      // sibling or, if prevChild is null, at the beginning
-      function positionAfter(list, prevChild) {
-        if (prevChild === null) {
-          return 0;
+      return -1;
+    },
+    // using the Firebase API's prevChild behavior, we
+    // place each element in the list after it's prev
+    // sibling or, if prevChild is null, at the beginning
+    positionAfter(list, prevChild) {
+      if (prevChild === null) {
+        return 0;
+      } else {
+        var i = this.positionFor(list, prevChild);
+        if (i === -1) {
+          return list.length;
         } else {
-          var i = positionFor(list, prevChild);
-          if (i === -1) {
-            return list.length;
-          } else {
-            return i + 1;
-          }
+          return i + 1;
         }
       }
+    },
+    syncChanges(list, ref) {
+      self = this;
+      ref.on("child_added", function _add(snap, prevChild) {
+        var data = snap.val();
+        data.$id = snap.key; // assumes data is always an object
+        var pos = self.positionAfter(list, prevChild);
+        list.splice(pos, 0, data);
+      });
 
-      function syncChanges(list, ref) {
-        ref.on("child_added", function _add(snap, prevChild) {
-          var data = snap.val();
-          data.$id = snap.key; // assumes data is always an object
-          var pos = positionAfter(list, prevChild);
-          list.splice(pos, 0, data);
-        });
+      ref.on("child_removed", function _remove(snap) {
+        console.log("child_remove");
+        console.log(snap.val());
+        var i = self.positionFor(list, snap.key);
+        if (i > -1) {
+          list.splice(i, 1);
+        }
+      });
 
-        ref.on("child_removed", function _remove(snap) {
-          console.log("child_remove");
-          console.log(snap.val());
-          var i = positionFor(list, snap.key);
-          if (i > -1) {
-            list.splice(i, 1);
-          }
-        });
+      ref.on("child_changed", function _change(snap) {
+        console.log("child_changed");
+        console.log(snap.val());
+        var i = self.positionFor(list, snap.key);
+        if (i > -1) {
+          list[i] = snap.val();
+          list[i].$id = snap.key; // assumes data is always an object
+        }
+      });
 
-        ref.on("child_changed", function _change(snap) {
-          console.log("child_changed");
-          console.log(snap.val());
-          var i = positionFor(list, snap.key);
-          if (i > -1) {
-            list[i] = snap.val();
-            list[i].$id = snap.key; // assumes data is always an object
-          }
-        });
+      ref.on("child_moved", function _move(snap, prevChild) {
+        var curPos = this.positionFor(list, snap.key);
+        if (curPos > -1) {
+          var data = list.splice(curPos, 1)[0];
+          var newPos = self.positionAfter(list, prevChild);
+          list.splice(newPos, 0, data);
+        }
+      });
+    },
+    wrapLocalCrudOps(list, firebaseRef) {
+      // we can hack directly on the array to provide some convenience methods
+      list.$add = function(data) {
+        if (data.hasOwnProperty("$id")) {
+          delete data.$id;
+        }
+        return firebaseRef.push(data);
+      };
 
-        ref.on("child_moved", function _move(snap, prevChild) {
-          var curPos = positionFor(list, snap.key);
-          if (curPos > -1) {
-            var data = list.splice(curPos, 1)[0];
-            var newPos = positionAfter(list, prevChild);
-            list.splice(newPos, 0, data);
-          }
-        });
-      }
+      list.$remove = function(key) {
+        console.log("remove on firebase");
+        firebaseRef.child(key).remove();
+      };
 
-      function wrapLocalCrudOps(list, firebaseRef) {
-        // we can hack directly on the array to provide some convenience methods
-        list.$add = function(data) {
-          if (data.hasOwnProperty("$id")) {
-            delete data.$id;
-          }
-          return firebaseRef.push(data);
-        };
+      list.$set = function(key, newData) {
+        console.log("update on firebase");
+        // make sure we don't accidentally push our $id prop
+        if (newData.hasOwnProperty("$id")) {
+          delete newData.$id;
+        }
+        firebaseRef.child(key).set(newData);
+      };
 
-        list.$remove = function(key) {
-          console.log("remove on firebase")
-          firebaseRef.child(key).remove();
-        };
-
-        list.$set = function(key, newData) {
-          console.log("update on firebase")
-          // make sure we don't accidentally push our $id prop
-          if (newData.hasOwnProperty("$id")) {
-            delete newData.$id;
-          }
-          firebaseRef.child(key).set(newData);
-        };
-
-        list.$indexOf = function(key) {
-          return positionFor(list, key); // positionFor in examples above
-        };
-      }
-
-      function getSynchronizedArray(firebaseRef) {
-        var list = [];
-        syncChanges(list, firebaseRef);
-        wrapLocalCrudOps(list, firebaseRef);
-        return list;
-      }
-      // add whole GeoJSON
-      // this.rasterRef.on(
-      //   "value",
-      //   function(dataSnapshot) {
-      //     console.log(dataSnapshot.val());
-      //     this.raster = dataSnapshot.val();
-      //   }.bind(this)
-      //);
-      // tut
-      //this.featuresRef.on("child_changed", snapshot => {
-      //  console.log("feature changed");
-      //  console.log(snapshot.val());
-      //});
+      list.$indexOf = function(key) {
+        return positionFor(list, key); // positionFor in examples above
+      };
+    },
+    getSynchronizedArray(firebaseRef) {
+      var list = [];
+      this.syncChanges(list, firebaseRef);
+      this.wrapLocalCrudOps(list, firebaseRef);
+      return list;
     },
     onEachFeatureClosure(defaultStyle, highlightStyle) {
       self = this;
