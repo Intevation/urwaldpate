@@ -8,6 +8,11 @@
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import Popup from "./Popup";
+// Firebase App (the core Firebase SDK) is always required and must be listed first
+import * as firebase from "firebase/app";
+
+// Add the Firebase products that you want to use
+import "firebase/database";
 
 //https://github.com/KoRiGaN/Vue2Leaflet/issues/28
 
@@ -23,9 +28,20 @@ export default {
   components: { Popup },
   props: {},
   data: () => ({
+    firebaseConfig: {
+      apiKey: process.env.VUE_APP_apiKey,
+      authDomain: process.env.VUE_APP_authDomain,
+      databaseURL: process.env.VUE_APP_databaseURL,
+      projectId: process.env.VUE_APP_projectId,
+      storageBucket: process.env.VUE_APP_storageBucket,
+      messagingSenderId: process.env.VUE_APP_messagingSenderId,
+      appId: pprocess.env.VUE_APP_messagingSenderId
+    },
+    db: {},
+    list: [],
+    featuresRef: {},
     dialog: false,
     selected: [],
-    raster: {},
     map: {},
     defaultStyle: {
       color: "grey",
@@ -47,24 +63,47 @@ export default {
     ebene: {}
   }),
   watch: {
-    raster: function() {
-      this.ebene = L.geoJSON(null, {
-        onEachFeature: this.onEachFeatureClosure(
-          this.defaultStyle,
-          this.highlightStyle
-        )
-      });
-      this.ebene.addData(this.raster);
-      this.ebene.addTo(this.map);
-      this.map.fitBounds(this.ebene.getBounds());
-      this.map.setMaxBounds(this.ebene.getBounds());
+    list: {
+      handler: function() {
+        if (this.ebene instanceof L.Layer) {
+          console.log("remove Layer");
+          this.ebene.remove();
+        }
+        this.ebene = L.geoJSON(null, {
+          onEachFeature: this.onEachFeatureClosure(
+            this.defaultStyle,
+            this.highlightStyle
+          ),
+          style: function(feature) {
+            switch (feature.properties.Pate) {
+              case "ja":
+                return { fillColor: "red" };
+            }
+          }
+        });
+
+        var bar = new Promise((resolve, reject) => {
+          this.list.forEach((value, index, array) => {
+            this.ebene.addData(value);
+            if (index === array.length - 1) resolve();
+          });
+        });
+
+        bar.then(() => {
+          this.ebene.addTo(this.map);
+          this.map.fitBounds(this.ebene.getBounds());
+          this.map.setMaxBounds(this.ebene.getBounds());
+        });
+      },
+      deep: true
     }
   },
   created() {
-    this.fetchData();
+    //    this.fetchData();
+    this.fetchDataFromFirebase();
   },
   mounted() {
-    let map = L.map("map", {
+    this.map = L.map("map", {
       attributionControl: false,
       center: [35.5322, 21.09375],
       zoom: 15,
@@ -98,15 +137,122 @@ export default {
     // });
   },
   methods: {
-    fetchData() {
-      fetch("data/biesbeck.geojson")
-        .then(data => {
-          return data.json();
-        })
-        .then(json => {
-          this.raster = json;
-        })
-        .catch(err => console.error(err));
+    fetchDataFromFirebase() {
+      firebase.initializeApp(this.firebaseConfig);
+      this.db = firebase.database();
+      //this.rasterRef = firebase.database().ref();
+      this.featuresRef = this.db.ref("/features");
+      this.list = this.getSynchronizedArray(this.featuresRef);
+    },
+    positionFor(list, key) {
+      for (var i = 0, len = list.length; i < len; i++) {
+        if (list[i].$id === key) {
+          return i;
+        }
+      }
+      return -1;
+    },
+    // using the Firebase API's prevChild behavior, we
+    // place each element in the list after it's prev
+    // sibling or, if prevChild is null, at the beginning
+    positionAfter(list, prevChild) {
+      if (prevChild === null) {
+        return 0;
+      } else {
+        var i = this.positionFor(list, prevChild);
+        if (i === -1) {
+          return list.length;
+        } else {
+          return i + 1;
+        }
+      }
+    },
+    syncChanges(list, ref) {
+      self = this;
+      ref.on("child_added", function _add(snap, prevChild) {
+        var data = snap.val();
+        data.$id = snap.key; // assumes data is always an object
+        var pos = self.positionAfter(list, prevChild);
+        list.splice(pos, 0, data);
+      });
+
+      ref.on("child_removed", function _remove(snap) {
+        var i = self.positionFor(list, snap.key);
+        if (i > -1) {
+          list.splice(i, 1);
+        }
+      });
+
+      ref.on("child_changed", function _change(snap) {
+        console.log("child_changed");
+        console.log(snap.val());
+        var i = self.positionFor(list, snap.key);
+        if (i > -1) {
+          //list[i] = snap.val();
+          //list[i].$id = snap.key; // assumes data is always an object
+
+          // Caveats
+          // Due to limitations in JavaScript, Vue cannot detect the following changes to an array:
+          // When you directly set an item with the index, e.g. vm.items[indexOfItem] = newValue
+          // https://vuejs.org/v2/guide/list.html#Object-Change-Detection-Caveats
+          list.splice(i, 1, snap.val());
+          list[i].$id = snap.key; // assumes data is always an object
+
+          //Alternatives:
+          //self.list =Object.assign([],list)
+
+          //self.list=[]
+          //self.list=list
+
+          //// https://github.com/vuejs/vue/issues/2164#issuecomment-287022802
+          //// CBD? Maybe with computed property?
+          //self.list=list.slice(0)
+          //// Because functions get lost during slice.
+          //self.wrapLocalCrudOps(self.list,ref)
+        }
+      });
+
+      ref.on("child_moved", function _move(snap, prevChild) {
+        var curPos = this.positionFor(list, snap.key);
+        if (curPos > -1) {
+          var data = list.splice(curPos, 1)[0];
+          var newPos = self.positionAfter(list, prevChild);
+          list.splice(newPos, 0, data);
+        }
+      });
+    },
+    wrapLocalCrudOps(list, firebaseRef) {
+      // we can hack directly on the array to provide some convenience methods
+      list.$add = function(data) {
+        if (data.hasOwnProperty("$id")) {
+          delete data.$id;
+        }
+        return firebaseRef.push(data);
+      };
+
+      list.$remove = function(key) {
+        console.log("remove on firebase");
+        firebaseRef.child(key).remove();
+      };
+
+      list.$set = function(key, newData) {
+        console.log("update on firebase");
+        // make sure we don't accidentally push our $id prop
+        if (newData.hasOwnProperty("$id")) {
+          delete newData.$id;
+        }
+        firebaseRef.child(key).set(newData);
+      };
+
+      list.$indexOf = function(key) {
+        return positionFor(list, key); // positionFor in examples above
+      };
+    },
+    getSynchronizedArray(firebaseRef) {
+      var list = [];
+      this.syncChanges(list, firebaseRef);
+      this.wrapLocalCrudOps(list, firebaseRef);
+      return list;
     },
     onEachFeatureClosure(defaultStyle, highlightStyle) {
       self = this;
@@ -131,7 +277,7 @@ export default {
         });
         layer.on("click", function(e) {
           //this.setStyle(self.selectedStyle);
-          //console.log(e);
+          console.log(e.target.feature);
           self.klick(e.target, e.target.feature.properties.RasterID);
         });
       }.bind(this);
