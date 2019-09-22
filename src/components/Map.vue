@@ -42,6 +42,7 @@ export default {
     featuresRef: {},
     dialog: false,
     selected: [],
+    donated: [],
     map: {},
     defaultStyle: {
       color: "grey",
@@ -258,6 +259,9 @@ export default {
       self = this;
 
       return function onEachFeature(feature, layer) {
+        if (feature.properties.Pate === "ja") {
+          self.donated.push(feature.properties.RasterID);
+        }
         //if (feature.properties && feature.properties.RasterID) {
         //  layer.bindTooltip(String(feature.properties.RasterID));
         //}
@@ -284,17 +288,19 @@ export default {
     },
     klick(layer, RasterID) {
       this.dialog = false;
-      if (!this.selected.includes(RasterID)) {
-        layer.setStyle(this.selectedStyle);
-        this.selected.push(RasterID);
-      } else {
-        this.selected = this.selected.filter(function(value, index, arr) {
-          return value != RasterID;
-        });
-        this.ebene.resetStyle(layer);
-      }
-      if (this.selected.length != 0) {
-        this.dialog = true;
+      if (!this.donated.includes(RasterID)) {
+        if (!this.selected.includes(RasterID)) {
+          layer.setStyle(this.selectedStyle);
+          this.selected.push(RasterID);
+        } else {
+          this.selected = this.selected.filter(function(value, index, arr) {
+            return value != RasterID;
+          });
+          this.ebene.resetStyle(layer);
+        }
+        if (this.selected.length != 0) {
+          this.dialog = true;
+        }
       }
     }
   }
