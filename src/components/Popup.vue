@@ -31,22 +31,34 @@
 
 <script>
 export default {
-  props: { dialog: Boolean, selected: Array },
+  props: { dialog: Boolean, selectedFeatures: Array },
   computed: {
     betrag: function() {
-      return this.selected.length * 10;
+      return this.hektarIDs.length * 10;
     },
     hektar: function() {
-      return this.selected.length * 1;
+      return this.hektarIDs.length * 1;
+    },
+    hektarIDs: function() {
+      var hektarIDs = [];
+      if (this.selectedFeatures.length > 0) {
+
+      this.selectedFeatures.forEach(element => {
+        hektarIDs.push(element.properties.RasterID);
+      });
+      return hektarIDs;
+      } else {
+        return []
+      }
     }
   },
   methods: {
     klick() {
       window.open(
         "https://naturerbe.nabu.de/include/versteckt/sandkasten/urwald.html?hektar-id=" +
-          this.selected +
+          this.hektarIDs+
           "&betrag=" +
-          this.selected.length * 10
+          this.betrag
       );
       this.$emit("update:dialog", false);
     }

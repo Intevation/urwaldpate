@@ -1,6 +1,6 @@
 <template>
   <div id="map">
-    <Popup :dialog.sync="dialog" :selected="selected"></Popup>
+    <Popup :dialog.sync="dialog" :selectedFeatures="selectedFeatures"></Popup>
   </div>
 </template>
 
@@ -41,7 +41,7 @@ export default {
     list: [],
     featuresRef: {},
     dialog: false,
-    selected: [],
+    selectedFeatures: [],
     donated: [],
     map: {},
     defaultStyle: {
@@ -260,7 +260,7 @@ export default {
 
       return function onEachFeature(feature, layer) {
         if (feature.properties.Pate === "ja") {
-          self.donated.push(feature.properties.RasterID);
+          self.donated.push(feature);
         }
         //if (feature.properties && feature.properties.RasterID) {
         //  layer.bindTooltip(String(feature.properties.RasterID));
@@ -282,23 +282,23 @@ export default {
         layer.on("click", function(e) {
           //this.setStyle(self.selectedStyle);
           console.log(e.target.feature);
-          self.klick(e.target, e.target.feature.properties.RasterID);
+          self.klick(e.target);
         });
       }.bind(this);
     },
-    klick(layer, RasterID) {
+    klick(layer) {
       this.dialog = false;
-      if (!this.donated.includes(RasterID)) {
-        if (!this.selected.includes(RasterID)) {
+      if (!this.donated.includes(layer.feature)) {
+        if (!this.selectedFeatures.includes(layer.feature)) {
           layer.setStyle(this.selectedStyle);
-          this.selected.push(RasterID);
+          this.selectedFeatures.push(layer.feature)
         } else {
-          this.selected = this.selected.filter(function(value, index, arr) {
-            return value != RasterID;
-          });
+          this.selectedFeatures = this.selectedFeatures.filter(function (value,index,arr){
+            return value != layer.feature;
+          })
           this.ebene.resetStyle(layer);
         }
-        if (this.selected.length != 0) {
+        if (this.selectedFeatures.length != 0) {
           this.dialog = true;
         }
       }
