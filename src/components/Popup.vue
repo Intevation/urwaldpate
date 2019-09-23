@@ -1,6 +1,6 @@
 <template>
   <v-row justify="center">
-    <v-dialog v-model="dialog" max-width="485">
+    <v-dialog v-model="dialog" persistent max-width="485">
       <v-card>
         <v-card-title class="headline">Ja, ich werde Urwald-Pate für {{hektar}} Hektar!</v-card-title>
 
@@ -14,7 +14,7 @@
             small
             outlined
             color="rgb(118,184,40)"
-            @click="$emit('update:dialog', false);"
+            @click="more"
           >Weitere Fläche wählen!</v-btn>
           <v-btn small color="rgb(118,184,40)" dark @click="klick">Jetzt Urwald-Paten werden!</v-btn>
         </v-card-actions>
@@ -42,25 +42,27 @@ export default {
     hektarIDs: function() {
       var hektarIDs = [];
       if (this.selectedFeatures.length > 0) {
-
-      this.selectedFeatures.forEach(element => {
-        hektarIDs.push(element.properties.RasterID);
-      });
-      return hektarIDs;
+        this.selectedFeatures.forEach(element => {
+          hektarIDs.push(element.properties.RasterID);
+        });
+        return hektarIDs;
       } else {
-        return []
+        return [];
       }
     }
   },
   methods: {
+    more() {
+      this.$emit("update:dialog", !this.dialog);
+    },
     klick() {
       window.open(
         "https://naturerbe.nabu.de/include/versteckt/sandkasten/urwald.html?hektar-id=" +
-          this.hektarIDs+
+          this.hektarIDs +
           "&betrag=" +
           this.betrag
       );
-      this.$emit("update:dialog", false);
+      this.$emit("update:dialog", !this.dialog);
     }
   }
 };
