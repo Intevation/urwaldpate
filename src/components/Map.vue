@@ -44,6 +44,11 @@ export default {
     selectedFeatures: [],
     donated: [],
     map: {},
+    satellite: L.tileLayer.wms("https://tiles.maps.eox.at/?", {
+      layers: "s2cloudless_3857",
+      attribution:
+        '<a href="https://s2maps.eu" target="_blank">Sentinel-2 cloudless - https://s2maps.eu</a> by <a href="https://eox.at/" target="_blank">EOX IT Services GmbH</a> (Contains modified Copernicus Sentinel data 2017 & 2018)'
+    }),
     defaultStyle: {
       color: "grey",
       weight: 1,
@@ -118,21 +123,14 @@ export default {
       // renderer: L.canvas()
     });
 
-    map.addControl(
+    this.map.addControl(
       L.control.attribution({
         position: "bottomright",
         prefix: false
       })
     );
 
-    L.tileLayer
-      .wms("https://tiles.maps.eox.at/?", {
-        layers: "s2cloudless_3857",
-        attribution:
-          '<a href="https://s2maps.eu" target="_blank">Sentinel-2 cloudless - https://s2maps.eu</a> by <a href="https://eox.at/" target="_blank">EOX IT Services GmbH</a> (Contains modified Copernicus Sentinel data 2017 & 2018)'
-      })
-      .addTo(map);
-    this.map = map;
+    this.satellite.addTo(this.map);
     // map.on("moveend", function() {
     //   console.log(map.getCenter());
     // });
@@ -281,7 +279,6 @@ export default {
         });
         layer.on("click", function(e) {
           //this.setStyle(self.selectedStyle);
-          console.log(e.target.feature);
           self.klick(e.target);
         });
       }.bind(this);
@@ -291,11 +288,15 @@ export default {
       if (!this.donated.includes(layer.feature)) {
         if (!this.selectedFeatures.includes(layer.feature)) {
           layer.setStyle(this.selectedStyle);
-          this.selectedFeatures.push(layer.feature)
+          this.selectedFeatures.push(layer.feature);
         } else {
-          this.selectedFeatures = this.selectedFeatures.filter(function (value,index,arr){
+          this.selectedFeatures = this.selectedFeatures.filter(function(
+            value,
+            index,
+            arr
+          ) {
             return value != layer.feature;
-          })
+          });
           this.ebene.resetStyle(layer);
         }
         if (this.selectedFeatures.length != 0) {
