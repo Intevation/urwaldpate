@@ -75,6 +75,7 @@ export default {
           console.log("remove Layer");
           this.ebene.remove();
         }
+        console.log("listhandler")
         this.ebene = L.geoJSON(null, {
           onEachFeature: this.onEachFeatureClosure(
             this.defaultStyle,
@@ -101,7 +102,8 @@ export default {
           this.map.setMaxBounds(this.ebene.getBounds());
         });
       },
-      deep: true
+      deep: true,
+      immediate: false
     }
   },
   created() {
@@ -142,41 +144,41 @@ export default {
       //this.rasterRef = firebase.database().ref();
       this.featuresRef = this.db.ref("/features");
       this.list = this.getSynchronizedArray(this.featuresRef);
-    },
-    positionFor(list, key) {
-      for (var i = 0, len = list.length; i < len; i++) {
-        if (list[i].$id === key) {
-          return i;
-        }
-      }
-      return -1;
-    },
-    // using the Firebase API's prevChild behavior, we
-    // place each element in the list after it's prev
-    // sibling or, if prevChild is null, at the beginning
-    positionAfter(list, prevChild) {
-      if (prevChild === null) {
-        return 0;
-      } else {
-        var i = this.positionFor(list, prevChild);
-        if (i === -1) {
-          return list.length;
-        } else {
-          return i + 1;
-        }
-      }
+      this.wrapLocalCrudOps(this.selectedFeatures, this.featuresRef);
     },
     syncChanges(list, ref) {
-      self = this;
+      function positionFor(list, key) {
+        for (var i = 0, len = list.length; i < len; i++) {
+          if (list[i].$id === key) {
+            return i;
+          }
+        }
+        return -1;
+      }
+      // using the Firebase API's prevChild behavior, we
+      // place each element in the list after it's prev
+      // sibling or, if prevChild is null, at the beginning
+      function positionAfter(list, prevChild) {
+        if (prevChild === null) {
+          return 0;
+        } else {
+          var i = positionFor(list, prevChild);
+          if (i === -1) {
+            return list.length;
+          } else {
+            return i + 1;
+          }
+        }
+      }
       ref.on("child_added", function _add(snap, prevChild) {
         var data = snap.val();
         data.$id = snap.key; // assumes data is always an object
-        var pos = self.positionAfter(list, prevChild);
+        var pos = positionAfter(list, prevChild);
         list.splice(pos, 0, data);
       });
 
       ref.on("child_removed", function _remove(snap) {
-        var i = self.positionFor(list, snap.key);
+        var i = positionFor(list, snap.key);
         if (i > -1) {
           list.splice(i, 1);
         }
@@ -185,8 +187,13 @@ export default {
       ref.on("child_changed", function _change(snap) {
         console.log("child_changed");
         console.log(snap.val());
-        var i = self.positionFor(list, snap.key);
+        console.log(snap.key)
+        console.log(list)
+        //var i = positionFor(list, snap.key);
+        var i = list.findIndex(x=> x.properties.RasterID === snap.val().properties.RasterID)
+        console.log(i)
         if (i > -1) {
+          console.log(i)
           //list[i] = snap.val();
           //list[i].$id = snap.key; // assumes data is always an object
 
@@ -212,15 +219,23 @@ export default {
       });
 
       ref.on("child_moved", function _move(snap, prevChild) {
-        var curPos = this.positionFor(list, snap.key);
+        var curPos = positionFor(list, snap.key);
         if (curPos > -1) {
           var data = list.splice(curPos, 1)[0];
-          var newPos = self.positionAfter(list, prevChild);
+          var newPos = positionAfter(list, prevChild);
           list.splice(newPos, 0, data);
         }
       });
     },
     wrapLocalCrudOps(list, firebaseRef) {
+      function positionFor(list, key) {
+        for (var i = 0, len = list.length; i < len; i++) {
+          if (list[i].$id === key) {
+            return i;
+          }
+        }
+        return -1;
+      }
       // we can hack directly on the array to provide some convenience methods
       list.$add = function(data) {
         if (data.hasOwnProperty("$id")) {
@@ -254,11 +269,11 @@ export default {
       return list;
     },
     onEachFeatureClosure(defaultStyle, highlightStyle) {
-      self = this;
+      let that= this;
 
       return function onEachFeature(feature, layer) {
         if (feature.properties.Pate === "ja") {
-          self.donated.push(feature);
+          that.donated.push(feature);
         }
         //if (feature.properties && feature.properties.RasterID) {
         //  layer.bindTooltip(String(feature.properties.RasterID));
@@ -279,7 +294,7 @@ export default {
         });
         layer.on("click", function(e) {
           //this.setStyle(self.selectedStyle);
-          self.klick(e.target);
+          that.klick(e.target);
         });
       }.bind(this);
     },

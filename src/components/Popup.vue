@@ -62,6 +62,13 @@ export default {
           "&betrag=" +
           this.betrag
       );
+      let that=this
+      this.selectedFeatures.forEach(function(element){
+        element.properties.Pate="ja"
+        that.selectedFeatures.$set(element.$id,element)
+        that.selectedFeatures.shift()
+
+      })
       this.$emit("update:dialog", !this.dialog);
     }
   }
