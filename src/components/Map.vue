@@ -44,6 +44,18 @@ export default {
     selectedFeatures: [],
     donated: [],
     map: {},
+    streetmap: L.tileLayer(
+      "https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}",
+      {
+        attribution:
+          'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+        maxZoom: 18,
+        id: "mapbox.streets",
+        accessToken:
+          "pk.eyJ1IjoiYmpvZXJuc2NoaWxiZXJnIiwiYSI6InRzOVZKeWsifQ.y20mr9o3MolFOUdTQekhUA",
+        noWrap: true
+      }
+    ),
     satellite: L.tileLayer.wms("https://tiles.maps.eox.at/?", {
       layers: "s2cloudless_3857",
       attribution:
@@ -75,7 +87,7 @@ export default {
           console.log("remove Layer");
           this.ebene.remove();
         }
-        console.log("listhandler")
+        console.log("listhandler");
         this.ebene = L.geoJSON(null, {
           onEachFeature: this.onEachFeatureClosure(
             this.defaultStyle,
@@ -132,7 +144,7 @@ export default {
       })
     );
 
-    this.satellite.addTo(this.map);
+    this.streetmap.addTo(this.map);
     // map.on("moveend", function() {
     //   console.log(map.getCenter());
     // });
@@ -187,13 +199,15 @@ export default {
       ref.on("child_changed", function _change(snap) {
         console.log("child_changed");
         console.log(snap.val());
-        console.log(snap.key)
-        console.log(list)
+        console.log(snap.key);
+        console.log(list);
         //var i = positionFor(list, snap.key);
-        var i = list.findIndex(x=> x.properties.RasterID === snap.val().properties.RasterID)
-        console.log(i)
+        var i = list.findIndex(
+          x => x.properties.RasterID === snap.val().properties.RasterID
+        );
+        console.log(i);
         if (i > -1) {
-          console.log(i)
+          console.log(i);
           //list[i] = snap.val();
           //list[i].$id = snap.key; // assumes data is always an object
 
@@ -269,7 +283,7 @@ export default {
       return list;
     },
     onEachFeatureClosure(defaultStyle, highlightStyle) {
-      let that= this;
+      let that = this;
 
       return function onEachFeature(feature, layer) {
         if (feature.properties.Pate === "ja") {
