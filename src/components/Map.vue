@@ -44,6 +44,12 @@ export default {
     selectedFeatures: [],
     donated: [],
     map: {},
+    osm: new L.TileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      minZoom: 8,
+      maxZoom: 18,
+      attribution:
+        'Map data © <a href="https://openstreetmap.org">OpenStreetMap</a> contributors'
+    }),
     streetmap: L.tileLayer(
       "https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}",
       {
@@ -144,7 +150,7 @@ export default {
       })
     );
 
-    this.streetmap.addTo(this.map);
+    this.osm.addTo(this.map);
     // map.on("moveend", function() {
     //   console.log(map.getCenter());
     // });
