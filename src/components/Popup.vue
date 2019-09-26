@@ -16,7 +16,7 @@
             color="rgb(118,184,40)"
             @click="more"
           >Weitere Fläche wählen!</v-btn>
-          <v-btn small color="rgb(118,184,40)" dark @click="klick">Jetzt Urwald-Paten werden!</v-btn>
+          <v-btn small color="rgb(118,184,40)" dark @click="klick">Jetzt Urwald-Pate werden!</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
