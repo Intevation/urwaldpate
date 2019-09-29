@@ -44,6 +44,15 @@ export default {
     selectedFeatures: [],
     donated: [],
     map: {},
+    //https://github.com/esri/esri-leaflet#terms
+    esri: L.tileLayer(
+      "http://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+      {
+        attribution:
+          '&copy;<a href="http://www.esri.com/">Esri</a>i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
+        maxZoom: 18
+      }
+    ),
     osm: new L.TileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       minZoom: 8,
       maxZoom: 18,
@@ -90,10 +99,8 @@ export default {
     list: {
       handler: function() {
         if (this.ebene instanceof L.Layer) {
-          console.log("remove Layer");
           this.ebene.remove();
         }
-        console.log("listhandler");
         this.ebene = L.geoJSON(null, {
           onEachFeature: this.onEachFeatureClosure(
             this.defaultStyle,
@@ -150,7 +157,7 @@ export default {
       })
     );
 
-    this.osm.addTo(this.map);
+    this.esri.addTo(this.map);
     // map.on("moveend", function() {
     //   console.log(map.getCenter());
     // });
@@ -203,17 +210,11 @@ export default {
       });
 
       ref.on("child_changed", function _change(snap) {
-        console.log("child_changed");
-        console.log(snap.val());
-        console.log(snap.key);
-        console.log(list);
         //var i = positionFor(list, snap.key);
         var i = list.findIndex(
           x => x.properties.RasterID === snap.val().properties.RasterID
         );
-        console.log(i);
         if (i > -1) {
-          console.log(i);
           //list[i] = snap.val();
           //list[i].$id = snap.key; // assumes data is always an object
 
@@ -265,12 +266,10 @@ export default {
       };
 
       list.$remove = function(key) {
-        console.log("remove on firebase");
         firebaseRef.child(key).remove();
       };
 
       list.$set = function(key, newData) {
-        console.log("update on firebase");
         // make sure we don't accidentally push our $id prop
         if (newData.hasOwnProperty("$id")) {
           delete newData.$id;
