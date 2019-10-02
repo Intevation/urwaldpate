@@ -13,6 +13,7 @@ import * as firebase from "firebase/app";
 
 // Add the Firebase products that you want to use
 import "firebase/database";
+import undefined from 'firebase/database';
 
 //https://github.com/KoRiGaN/Vue2Leaflet/issues/28
 
@@ -76,21 +77,22 @@ export default {
       attribution:
         '<a href="https://s2maps.eu" target="_blank">Sentinel-2 cloudless - https://s2maps.eu</a> by <a href="https://eox.at/" target="_blank">EOX IT Services GmbH</a> (Contains modified Copernicus Sentinel data 2017 & 2018)'
     }),
+    donatedStyle: { fillOpacity: 0.5, fillColor: "#003333" },
     defaultStyle: {
       color: "grey",
-      weight: 1,
-      opacity: 0.5
+      weight: 2,
+      opacity: 0.85
     },
     highlightStyle: {
       color: "#4de600",
       weight: 3,
-      opacity: 0.5
+      opacity: 0.85
     },
     selectedStyle: {
       color: "grey",
       weight: 1,
-      opacity: 0.5,
-      fillOpacity: 0.5,
+      opacity: 0.85,
+      fillOpacity: 0.85,
       fillColor: "#4de600"
     },
     ebene: {}
@@ -109,9 +111,9 @@ export default {
           style: function(feature) {
             switch (feature.properties.Pate) {
               case "ja":
-                return { fillColor: "red" };
+                return this.donatedStyle;
             }
-          }
+          }.bind(this)
         });
 
         var bar = new Promise((resolve, reject) => {
@@ -138,7 +140,6 @@ export default {
   mounted() {
     this.map = L.map("map", {
       attributionControl: false,
-      center: [35.5322, 21.09375],
       zoom: 15,
       maxZoom: 18,
       minZoom: 13,
@@ -157,7 +158,7 @@ export default {
       })
     );
 
-    this.esri.addTo(this.map);
+    this.osm.addTo(this.map);
     // map.on("moveend", function() {
     //   console.log(map.getCenter());
     // });
@@ -303,13 +304,17 @@ export default {
 
         layer.on("mouseover", function(e) {
           // Change the style to the highlighted version
-          this.setStyle(highlightStyle);
+          if (e.target.feature.properties.Pate == undefined || e.target.feature.properties.Pate != 'ja') {
+            this.setStyle(highlightStyle);
+          }
         });
 
         // Create a mouseout event that undoes the mouseover changes
         layer.on("mouseout", function(e) {
           // Reverting the style back
-          this.setStyle(defaultStyle);
+          if (e.target.feature.properties.Pate == undefined ||  e.target.feature.properties.Pate != 'ja') {
+            this.setStyle(defaultStyle);
+          }
         });
         layer.on("click", function(e) {
           //this.setStyle(self.selectedStyle);
