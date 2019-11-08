@@ -64,7 +64,7 @@ export default {
       );
       let that=this
       this.selectedFeatures.forEach(function(element){
-        element.properties.Pate="ja"
+        element.properties.PatenID=1
         that.selectedFeatures.$set(element.$id,element)
         that.selectedFeatures.shift()
 

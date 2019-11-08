@@ -116,8 +116,7 @@ export default {
             this.highlightStyle
           ),
           style: function(feature) {
-            switch (feature.properties.Pate) {
-              case "ja":
+            if (feature.properties.PatenID != 0) {
                 return this.donatedStyle;
             }
           }.bind(this)
@@ -299,7 +298,7 @@ export default {
       let that = this;
 
       return function onEachFeature(feature, layer) {
-        if (feature.properties.Pate === "ja") {
+        if (feature.properties.PatenID === 1) {
           that.donated.push(feature);
         }
         //if (feature.properties && feature.properties.RasterID) {
@@ -311,7 +310,7 @@ export default {
 
         layer.on("mouseover", function(e) {
           // Change the style to the highlighted version
-          if (e.target.feature.properties.Pate == undefined || e.target.feature.properties.Pate != 'ja') {
+          if (e.target.feature.properties.PatenID == undefined || e.target.feature.properties.PatenID === 0) {
             this.setStyle(highlightStyle);
           }
         });
@@ -319,13 +318,14 @@ export default {
         // Create a mouseout event that undoes the mouseover changes
         layer.on("mouseout", function(e) {
           // Reverting the style back
-          if (e.target.feature.properties.Pate == undefined ||  e.target.feature.properties.Pate != 'ja') {
+          if (e.target.feature.properties.PatenID == undefined ||  e.target.feature.properties.PatenID === 0) {
             this.setStyle(defaultStyle);
           }
         });
         layer.on("click", function(e) {
-          //this.setStyle(self.selectedStyle);
+          if (e.target.feature.properties.PatenID == undefined ||  e.target.feature.properties.PatenID === 0) {
           that.klick(e.target);
+          }
         });
       }.bind(this);
     },
