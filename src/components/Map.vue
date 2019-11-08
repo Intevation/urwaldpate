@@ -174,7 +174,7 @@ export default {
       firebase.initializeApp(this.firebaseConfig);
       this.db = firebase.database();
       //this.rasterRef = firebase.database().ref();
-      this.featuresRef = this.db.ref("/features");
+      this.featuresRef = this.db.ref("/biesenthalerbecken/features");
       this.list = this.getSynchronizedArray(this.featuresRef);
       this.wrapLocalCrudOps(this.selectedFeatures, this.featuresRef);
     },
