@@ -77,7 +77,14 @@ export default {
       attribution:
         '<a href="https://s2maps.eu" target="_blank">Sentinel-2 cloudless - https://s2maps.eu</a> by <a href="https://eox.at/" target="_blank">EOX IT Services GmbH</a> (Contains modified Copernicus Sentinel data 2017 & 2018)'
     }),
-    donatedStyle: { fillOpacity: 0.5, fillColor: "#003333" },
+    //#ba3b76
+    //#b54076
+    //#d0b6d0
+    //#d38231
+    //#13c4be
+    //#e87a05
+    //#31a354
+    donatedStyle: { fillOpacity: 0.5, fillColor: "#31a354" },
     defaultStyle: {
       color: "grey",
       weight: 2,
