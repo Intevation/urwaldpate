@@ -57,19 +57,13 @@ export default {
     },
     klick() {
       window.open(
-        "https://naturerbe.nabu.de/include/versteckt/sandkasten/urwald.html?hektar-id=" +
+        "https://naturerbe.nabu.de/spenden-und-helfen/patenschaften/include/formular/urwald.html?hektar-id="+
           this.hektarIDs +
           "&betrag=" +
           this.betrag
       );
-      let that=this
-      this.selectedFeatures.forEach(function(element){
-        element.properties.PatenID=1
-        that.selectedFeatures.$set(element.$id,element)
-        that.selectedFeatures.shift()
-
-      })
       this.$emit("update:dialog", !this.dialog);
+      this.$emit("update:selectedFeatures", this.selectedFeatures=[]);
     }
   }
 };
