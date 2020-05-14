@@ -1,12 +1,17 @@
 <template>
   <v-row justify="center">
-    <v-dialog v-model="dialog" persistent max-width="485">
+    <v-dialog
+      v-model="dialog"
+      persistent
+      max-width="485">
       <v-card>
-        <v-card-title class="headline">Ja, ich werde Urwald-Pate für {{hektar}} Hektar!</v-card-title>
+        <v-card-title class="headline">
+          Ja, ich werde Urwald-Pate für {{ hektar }} Hektar!
+        </v-card-title>
 
         <v-card-text>
           Ich schütze mit
-          <strong>{{betrag}} Euro monatlich</strong> Urwald von morgen im Biesenthaler Becken.
+          <strong>{{ betrag }} Euro monatlich</strong> Urwald von morgen im Stechlinsee-Gebiet.
         </v-card-text>
 
         <v-card-actions class="justify-center">
@@ -14,9 +19,16 @@
             small
             outlined
             color="rgb(118,184,40)"
-            @click="more"
-          >Weitere Fläche wählen!</v-btn>
-          <v-btn small color="rgb(118,184,40)" dark @click="klick">Jetzt Urwald-Pate werden!</v-btn>
+            @click="more">
+            Weitere Fläche wählen!
+          </v-btn>
+          <v-btn
+            small
+            color="rgb(118,184,40)"
+            dark
+            @click="klick">
+            Jetzt Urwald-Pate werden!
+          </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -31,10 +43,16 @@
 
 <script>
 export default {
-  props: { dialog: Boolean, selectedFeatures: Array },
+  props: { dialog: Boolean, selectedFeatures: {
+    type: Array,
+    // Old style: function () { return [] }. ES6:
+    default: ()=>[]
+    }
+    },
   computed: {
     betrag: function() {
       return this.hektarIDs.length * 10;
+
     },
     hektar: function() {
       return this.hektarIDs.length * 1;
