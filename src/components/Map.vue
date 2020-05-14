@@ -181,13 +181,7 @@ export default {
       this.db = firebase.database();
       //this.rasterRef = firebase.database().ref();
       this.featuresRef = this.db.ref("/biesenthalerbecken/features");
-      this.featuresRef
-        .orderByChild("Gebiet")
-        .equalTo("Stechlinsee-Gebiet")
-        .on("child_added", function(Data) {
-          console.log(Data.val(), Data.key);
-        });
-      this.list = this.getSynchronizedArray(this.featuresRef);
+      this.list = this.getSynchronizedArray(this.featuresRef.orderByChild("properties/Gebiet").equalTo("Stechlinsee-Gebiet"));
       this.wrapLocalCrudOps(this.selectedFeatures, this.featuresRef);
     },
     syncChanges(list, ref) {
