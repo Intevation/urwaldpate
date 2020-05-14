@@ -1,6 +1,8 @@
 <template>
   <div id="map">
-    <Popup :dialog.sync="dialog" :selectedFeatures.sync="selectedFeatures"></Popup>
+    <Popup
+      :dialog.sync="dialog"
+      :selected-features.sync="selectedFeatures" />
   </div>
 </template>
 
@@ -13,7 +15,7 @@ import * as firebase from "firebase/app";
 
 // Add the Firebase products that you want to use
 import "firebase/database";
-import undefined from 'firebase/database';
+//import undefined from "firebase/database";
 
 //https://github.com/KoRiGaN/Vue2Leaflet/issues/28
 
@@ -115,14 +117,18 @@ export default {
             this.defaultStyle,
             this.highlightStyle
           ),
+          filter: function(feature) {
+            if (feature.properties.Gebiet === "Stechlinsee-Gebiet") return true;
+          },
           style: function(feature) {
             if (feature.properties.PatenID != 0) {
-                return this.donatedStyle;
+              return this.donatedStyle;
             }
           }.bind(this)
         });
 
-        var bar = new Promise((resolve, reject) => {
+        // var bar = new Promise((resolve, reject) => {
+        var bar = new Promise((resolve) => {
           this.list.forEach((value, index, array) => {
             this.ebene.addData(value);
             if (index === array.length - 1) resolve();
@@ -175,6 +181,12 @@ export default {
       this.db = firebase.database();
       //this.rasterRef = firebase.database().ref();
       this.featuresRef = this.db.ref("/biesenthalerbecken/features");
+      this.featuresRef
+        .orderByChild("Gebiet")
+        .equalTo("Stechlinsee-Gebiet")
+        .on("child_added", function(Data) {
+          console.log(Data.val(), Data.key);
+        });
       this.list = this.getSynchronizedArray(this.featuresRef);
       this.wrapLocalCrudOps(this.selectedFeatures, this.featuresRef);
     },
@@ -266,7 +278,7 @@ export default {
       }
       // we can hack directly on the array to provide some convenience methods
       list.$add = function(data) {
-        if (data.hasOwnProperty("$id")) {
+        if (Object.prototype.hasOwnProperty.call(data,"$id")) {
           delete data.$id;
         }
         return firebaseRef.push(data);
@@ -278,7 +290,7 @@ export default {
 
       list.$set = function(key, newData) {
         // make sure we don't accidentally push our $id prop
-        if (newData.hasOwnProperty("$id")) {
+        if (Object.prototype.hasOwnProperty.call(newData,"$id")) {
           delete newData.$id;
         }
         firebaseRef.child(key).set(newData);
@@ -310,7 +322,10 @@ export default {
 
         layer.on("mouseover", function(e) {
           // Change the style to the highlighted version
-          if (e.target.feature.properties.PatenID == undefined || e.target.feature.properties.PatenID === 0) {
+          if (
+            e.target.feature.properties.PatenID == undefined ||
+            e.target.feature.properties.PatenID === 0
+          ) {
             this.setStyle(highlightStyle);
           }
         });
@@ -318,13 +333,19 @@ export default {
         // Create a mouseout event that undoes the mouseover changes
         layer.on("mouseout", function(e) {
           // Reverting the style back
-          if (e.target.feature.properties.PatenID == undefined ||  e.target.feature.properties.PatenID === 0) {
+          if (
+            e.target.feature.properties.PatenID == undefined ||
+            e.target.feature.properties.PatenID === 0
+          ) {
             this.setStyle(defaultStyle);
           }
         });
         layer.on("click", function(e) {
-          if (e.target.feature.properties.PatenID == undefined ||  e.target.feature.properties.PatenID === 0) {
-          that.klick(e.target);
+          if (
+            e.target.feature.properties.PatenID == undefined ||
+            e.target.feature.properties.PatenID === 0
+          ) {
+            that.klick(e.target);
           }
         });
       }.bind(this);
@@ -336,10 +357,9 @@ export default {
           layer.setStyle(this.selectedStyle);
           this.selectedFeatures.push(layer.feature);
         } else {
+          // this.selectedFeatures = this.selectedFeatures.filter(function(value,index, arr)){});
           this.selectedFeatures = this.selectedFeatures.filter(function(
-            value,
-            index,
-            arr
+            value
           ) {
             return value != layer.feature;
           });
