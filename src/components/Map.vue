@@ -128,7 +128,7 @@ export default {
         });
 
         // var bar = new Promise((resolve, reject) => {
-        var bar = new Promise((resolve) => {
+        var bar = new Promise(resolve => {
           this.list.forEach((value, index, array) => {
             this.ebene.addData(value);
             if (index === array.length - 1) resolve();
@@ -272,7 +272,7 @@ export default {
       }
       // we can hack directly on the array to provide some convenience methods
       list.$add = function(data) {
-        if (Object.prototype.hasOwnProperty.call(data,"$id")) {
+        if (Object.prototype.hasOwnProperty.call(data, "$id")) {
           delete data.$id;
         }
         return firebaseRef.push(data);
@@ -284,7 +284,7 @@ export default {
 
       list.$set = function(key, newData) {
         // make sure we don't accidentally push our $id prop
-        if (Object.prototype.hasOwnProperty.call(newData,"$id")) {
+        if (Object.prototype.hasOwnProperty.call(newData, "$id")) {
           delete newData.$id;
         }
         firebaseRef.child(key).set(newData);
@@ -352,9 +352,7 @@ export default {
           this.selectedFeatures.push(layer.feature);
         } else {
           // this.selectedFeatures = this.selectedFeatures.filter(function(value,index, arr)){});
-          this.selectedFeatures = this.selectedFeatures.filter(function(
-            value
-          ) {
+          this.selectedFeatures = this.selectedFeatures.filter(function(value) {
             return value != layer.feature;
           });
           this.ebene.resetStyle(layer);
