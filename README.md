@@ -29,3 +29,10 @@ yarn run lint
 
 ### Customize configuration
 See [Configuration Reference](https://cli.vuejs.org/config/).
+
+## Tips and Tricks
+
+### Find duplicates in data
+```shell
+egrep  -i "RasterID" input.json | sort | uniq -d
+````
