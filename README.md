@@ -37,8 +37,14 @@ See [Configuration Reference](https://cli.vuejs.org/config/).
 egrep  -i "RasterID" input.json | sort | uniq -d
 ````
 
-With ogr:
+With ogr list all duplicates RasterIDs:
 
 ```shell
 ogrinfo -dialect SQLITE -sql "SELECT RasterID, Gebiet, COUNT(RasterID) FROM test GROUP BY RasterID HAVING COUNT(RasterID)>1" test.json 
 ```
+
+Display duplicate rows with all information.:
+
+```shell
+ogrinfo -dialect SQLITE -sql "SELECT RasterID, Gebiet FROM (SELECT *, count(*) OVER (PARTITION BY RasterID) as count FROM test) tableWithCount WHERE tableWithCount.count > 1" test.json 
+````
