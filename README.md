@@ -36,3 +36,9 @@ See [Configuration Reference](https://cli.vuejs.org/config/).
 ```shell
 egrep  -i "RasterID" input.json | sort | uniq -d
 ````
+
+With ogr:
+
+```shell
+ogrinfo -dialect SQLITE -sql "SELECT RasterID, Gebiet, COUNT(RasterID) FROM test GROUP BY RasterID HAVING COUNT(RasterID)>1" test.json 
+```
