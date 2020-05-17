@@ -48,3 +48,8 @@ Display duplicate rows with all information.:
 ```shell
 ogrinfo -dialect SQLITE -sql "SELECT RasterID, Gebiet FROM (SELECT *, count(*) OVER (PARTITION BY RasterID) as count FROM test) tableWithCount WHERE tableWithCount.count > 1" test.json 
 ````
+Return as CSV to stdout:
+
+```shell
+ogr2ogr -F CSV "/vsistdout/" -dialect SQLITE -sql "SELECT RasterID, Gebiet FROM (SELECT *, count(*) OVER (PARTITION BY RasterID) as count FROM test) tableWithCount WHERE tableWithCount.count > 1" test.json 
+```
