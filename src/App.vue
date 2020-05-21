@@ -19,3 +19,9 @@ export default {
   })
 };
 </script>
+
+<style lang="sass">
+$color-pack: false
+
+@import '~vuetify/src/styles/main.sass'
+</style>
