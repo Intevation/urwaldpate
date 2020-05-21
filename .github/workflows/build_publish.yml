@@ -17,6 +17,7 @@ jobs:
           yarn
           yarn build
         env:
+          VUE_APP_TITLE: ${{ secrets.VUE_APP_TITLE }}
           VUE_APP_apiKey: ${{ secrets.VUE_APP_apiKey }}
           VUE_APP_authDomain: ${{ secrets.VUE_APP_authDomain }}
           VUE_APP_databaseURL: ${{ secrets.VUE_APP_databaseURL }}
