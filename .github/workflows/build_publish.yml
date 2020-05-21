@@ -14,6 +14,7 @@ jobs:
 
       - name: Install and Build
         run: |
+          env
           yarn
           yarn build
         env:
