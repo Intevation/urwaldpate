@@ -10,12 +10,20 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
         with:
-          persist-credentials: false 
+          persist-credentials: false
 
       - name: Install and Build
         run: |
           yarn
           yarn build
+        env:
+          VUE_APP_apiKey: ${{ secrets.VUE_APP_apiKey }}
+          VUE_APP_authDomain: ${{ secrets.VUE_APP_authDomain }}
+          VUE_APP_databaseURL: ${{ secrets.VUE_APP_databaseURL }}
+          VUE_APP_projectId: ${{ secrets.VUE_APP_projectId }}
+          VUE_APP_storageBucket: ${{ secrets.VUE_APP_storageBucket }}
+          VUE_APP_messagingSenderId: ${{ secrets.VUE_APP_messagingSenderId }}
+          VUE_APP_appId: ${{ secrets.VUE_APP_appId }}
 
       - name: Deploy
         uses: JamesIves/github-pages-deploy-action@releases/v3
