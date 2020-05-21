@@ -118,7 +118,7 @@ export default {
             this.highlightStyle
           ),
           filter: function(feature) {
-            if (feature.properties.Gebiet === "Stechlinsee-Gebiet") return true;
+            if (feature.properties.Gebiet === process.env.VUE_APP_AREA) return true;
           },
           style: function(feature) {
             if (feature.properties.PatenID != 0) {
@@ -181,7 +181,7 @@ export default {
       this.db = firebase.database();
       //this.rasterRef = firebase.database().ref();
       this.featuresRef = this.db.ref("/biesenthalerbecken/features");
-      this.list = this.getSynchronizedArray(this.featuresRef.orderByChild("properties/Gebiet").equalTo("Stechlinsee-Gebiet"));
+      this.list = this.getSynchronizedArray(this.featuresRef.orderByChild("properties/Gebiet").equalTo(process.env.VUE_APP_AREA));
       this.wrapLocalCrudOps(this.selectedFeatures, this.featuresRef);
     },
     syncChanges(list, ref) {

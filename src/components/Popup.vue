@@ -11,7 +11,7 @@
 
         <v-card-text>
           Ich schütze mit
-          <strong>{{ betrag }} Euro monatlich</strong> Urwald von morgen im Stechlinsee-Gebiet.
+          <strong>{{ betrag }} Euro monatlich</strong> Urwald von morgen im {{ gebiet }}.
         </v-card-text>
 
         <v-card-actions class="justify-center">
@@ -49,6 +49,9 @@ export default {
     default: ()=>[]
     }
     },
+  data: ()=>({
+    gebiet: process.env.VUE_APP_POPUP_AREA
+  }),
   computed: {
     betrag: function() {
       return this.hektarIDs.length * 10;
