@@ -17,6 +17,7 @@ jobs:
           env
           yarn
           yarn build
+          rm dist/.htaccess
         env:
           VUE_APP_TITLE: ${{ secrets.VUE_APP_TITLE }}
           VUE_APP_apiKey: ${{ secrets.VUE_APP_apiKey }}
