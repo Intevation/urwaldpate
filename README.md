@@ -1,4 +1,4 @@
-[![Gitpod Ready-to-Code](https://img.shields.io/badge/Gitpod-Ready--to--Code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/BjoernSchilberg/stechlinsee-gebiet)
+[![Gitpod Ready-to-Code](https://img.shields.io/badge/Gitpod-Ready--to--Code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/BjoernSchilberg/urwaldpate)
 
 # Urwaldpate
 
@@ -16,6 +16,40 @@
     - [Firebase rules](#firebase-rules)
 
 ## Project setup
+
+Checkout as:
+
+```shell
+git clone https://github.com/BjoernSchilberg/urwaldpate stechlinsee-gebiet
+```
+
+or as:
+
+```shell
+git clone https://github.com/BjoernSchilberg/urwaldpate biesenthaler_becken
+```
+
+Specify env variables by placing the following files in your project root:
+
+- `env.production`
+- `env.development`
+
+For example, the configuration files should have the following content:
+
+```shell
+VUE_APP_TITLE=Urwaldpate - Biesenthaler Becken (development)
+VUE_APP_AREA=BiesBecken
+VUE_APP_POPUP_AREA=Biesenthaler Becken
+VUE_APP_apiKey=XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+VUE_APP_authDomain=xxxxxxxxxxxxxx.xxxxxxxxxxx.xxx
+VUE_APP_databaseURL=https=//xxxxxxxxxx-xxx.xxxxxxxxxx.xxx
+VUE_APP_projectId=xxxxxxxxxx-xxx
+VUE_APP_storageBucket=xxxxxxxxxx-xxx.xxxxxxx.xxx
+VUE_APP_messagingSenderId=xxxxxxxxxxxx
+VUE_APP_appId=1=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+```
+
+Install all dependencies for the project:
 
 ```shell
 yarn install
