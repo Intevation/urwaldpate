@@ -13,22 +13,6 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Install and Build
-        run: |
-          env
-          yarn
-          yarn build
-          rm dist/.htaccess
-        env:
-          VUE_APP_TITLE: ${{ secrets.VUE_APP_TITLE }}
-          VUE_APP_apiKey: ${{ secrets.VUE_APP_apiKey }}
-          VUE_APP_authDomain: ${{ secrets.VUE_APP_authDomain }}
-          VUE_APP_databaseURL: ${{ secrets.VUE_APP_databaseURL }}
-          VUE_APP_projectId: ${{ secrets.VUE_APP_projectId }}
-          VUE_APP_storageBucket: ${{ secrets.VUE_APP_storageBucket }}
-          VUE_APP_messagingSenderId: ${{ secrets.VUE_APP_messagingSenderId }}
-          VUE_APP_appId: ${{ secrets.VUE_APP_appId }}
-
       - name: Get yarn cache directory path
         id: yarn-cache-dir-path
         run: echo "::set-output name=dir::$(yarn cache dir)"
@@ -40,6 +24,26 @@ jobs:
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-yarn-
+
+      - name: Install and Build
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          env
+          yarn
+
+      - name: Build
+        run: |
+          yarn build
+          rm dist/.htaccess
+        env:
+          VUE_APP_TITLE: ${{ secrets.VUE_APP_TITLE }}
+          VUE_APP_apiKey: ${{ secrets.VUE_APP_apiKey }}
+          VUE_APP_authDomain: ${{ secrets.VUE_APP_authDomain }}
+          VUE_APP_databaseURL: ${{ secrets.VUE_APP_databaseURL }}
+          VUE_APP_projectId: ${{ secrets.VUE_APP_projectId }}
+          VUE_APP_storageBucket: ${{ secrets.VUE_APP_storageBucket }}
+          VUE_APP_messagingSenderId: ${{ secrets.VUE_APP_messagingSenderId }}
+          VUE_APP_appId: ${{ secrets.VUE_APP_appId }}
 
       - name: Deploy
         uses: JamesIves/github-pages-deploy-action@releases/v3
