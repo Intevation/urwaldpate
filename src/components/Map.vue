@@ -180,12 +180,14 @@ export default {
       } else {
 
       this.snackbar=true;
-      console.log("Kein Gebiet angegeben!")
+      // eslint-disable-next-line no-console
+      console.error("Kein Gebiet angegeben!")
       }
     } else {
 
       this.snackbar=true;
-      console.log("Kein Gebiet angegeben!")
+      // eslint-disable-next-line no-console
+      console.error("Kein Gebiet angegeben!")
     }
   },
   mounted() {
