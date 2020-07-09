@@ -2,7 +2,27 @@
   <div id="map">
     <Popup
       :dialog.sync="dialog"
+      :gebiet="gebiet"
       :selected-features.sync="selectedFeatures" />
+    <div>
+      <v-snackbar
+        v-model="snackbar"
+        dark
+        top
+        color="error">
+        Kein Gebiet angegeben oder gefunden!
+        <v-btn
+          fab
+          small
+          color="error"
+          v-bind="attrs"
+          @click="snackbar = false">
+          <v-icon dark>
+            X
+          </v-icon>
+        </v-btn>
+      </v-snackbar>
+    </div>
   </div>
 </template>
 
@@ -40,6 +60,8 @@ export default {
       messagingSenderId: process.env.VUE_APP_messagingSenderId,
       appId: process.env.VUE_APP_messagingSenderId
     },
+    snackbar: false,
+    gebiet: "",
     db: {},
     list: [],
     featuresRef: {},
@@ -109,6 +131,7 @@ export default {
   watch: {
     list: {
       handler: function() {
+        let area_comp=this.gebiet
         if (this.ebene instanceof L.Layer) {
           this.ebene.remove();
         }
@@ -118,7 +141,7 @@ export default {
             this.highlightStyle
           ),
           filter: function(feature) {
-            if (feature.properties.Gebiet === process.env.VUE_APP_AREA) return true;
+            if (feature.properties.Gebiet === area_comp) return true;
           },
           style: function(feature) {
             if (feature.properties.PatenID != 0) {
@@ -146,8 +169,24 @@ export default {
     }
   },
   created() {
-    //    this.fetchData();
-    this.fetchDataFromFirebase();
+    let searchParams = new URLSearchParams(window.location.search);
+    if (searchParams.has("gebiet")) {
+      let param;
+      param = searchParams.get("gebiet");
+      if (param != ""){
+      // this.fetchData();
+      this.fetchDataFromFirebase(param);
+      this.gebiet=param;
+      } else {
+
+      this.snackbar=true;
+      console.log("Kein Gebiet angegeben!")
+      }
+    } else {
+
+      this.snackbar=true;
+      console.log("Kein Gebiet angegeben!")
+    }
   },
   mounted() {
     this.map = L.map("map", {
@@ -176,12 +215,12 @@ export default {
     // });
   },
   methods: {
-    fetchDataFromFirebase() {
+    fetchDataFromFirebase(param) {
       firebase.initializeApp(this.firebaseConfig);
       this.db = firebase.database();
       //this.rasterRef = firebase.database().ref();
       this.featuresRef = this.db.ref("/biesenthalerbecken/features");
-      this.list = this.getSynchronizedArray(this.featuresRef.orderByChild("properties/Gebiet").equalTo(process.env.VUE_APP_AREA));
+      this.list = this.getSynchronizedArray(this.featuresRef.orderByChild("properties/Gebiet").equalTo(param));
       this.wrapLocalCrudOps(this.selectedFeatures, this.featuresRef);
     },
     syncChanges(list, ref) {

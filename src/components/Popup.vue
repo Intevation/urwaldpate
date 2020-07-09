@@ -47,12 +47,20 @@ export default {
     type: Array,
     // Old style: function () { return [] }. ES6:
     default: ()=>[]
-    }
+    },
+    gebiet: {type: String, required: true, default: ""}
     },
   data: ()=>({
-    gebiet: process.env.VUE_APP_POPUP_AREA
   }),
   computed: {
+    selectedFeaturesLocal: {
+      get: function(){
+        return this.selectedFeatures
+      },
+      set: function(value){
+        this.$emit("update:selectedFeatures",value)
+      }
+    },
     betrag: function() {
       return this.hektarIDs.length * 10;
 
@@ -62,8 +70,8 @@ export default {
     },
     hektarIDs: function() {
       var hektarIDs = [];
-      if (this.selectedFeatures.length > 0) {
-        this.selectedFeatures.forEach(element => {
+      if (this.selectedFeaturesLocal.length > 0) {
+        this.selectedFeaturesLocal.forEach(element => {
           hektarIDs.push(element.properties.RasterID);
         });
         return hektarIDs;
@@ -84,7 +92,7 @@ export default {
           this.betrag
       );
       this.$emit("update:dialog", !this.dialog);
-      this.$emit("update:selectedFeatures", this.selectedFeatures=[]);
+      this.selectedFeaturesLocal=[];
     }
   }
 };
