@@ -20,14 +20,9 @@
 Checkout as:
 
 ```shell
-git clone https://github.com/BjoernSchilberg/urwaldpate stechlinsee-gebiet
+git clone https://github.com/BjoernSchilberg/urwaldpate urwaldpate
 ```
 
-or as:
-
-```shell
-git clone https://github.com/BjoernSchilberg/urwaldpate biesenthaler_becken
-```
 
 Specify env variables by placing the following files in your project root:
 
@@ -37,7 +32,7 @@ Specify env variables by placing the following files in your project root:
 For example, the configuration files should have the following content:
 
 ```shell
-VUE_APP_TITLE=Urwaldpate - Biesenthaler Becken (development)
+VUE_APP_TITLE=Urwaldpate
 VUE_APP_AREA=BiesBecken
 VUE_APP_POPUP_AREA=Biesenthaler Becken
 VUE_APP_apiKey=XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
