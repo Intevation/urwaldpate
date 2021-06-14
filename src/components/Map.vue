@@ -60,6 +60,7 @@ export default {
       messagingSenderId: process.env.VUE_APP_messagingSenderId,
       appId: process.env.VUE_APP_messagingSenderId
     },
+    dbname: process.env.VUE_APP_dbname,
     snackbar: false,
     gebiet: "",
     db: {},
@@ -209,8 +210,9 @@ export default {
       firebase.initializeApp(this.firebaseConfig);
       this.db = firebase.database();
       //this.rasterRef = firebase.database().ref();
-      this.featuresRef = this.db.ref("/biesenthalerbecken/features");
-      this.list = this.getSynchronizedArray(this.featuresRef.orderByChild("properties/Gebiet").equalTo(param));
+      this.featuresRef = this.db.ref(`/${this.dbname}/features`);
+      this.list = this.getSynchronizedArray(
+        this.featuresRef.orderByChild("properties/Gebiet").equalTo(param));
       this.wrapLocalCrudOps(this.selectedFeatures, this.featuresRef);
     },
     syncChanges(list, ref) {

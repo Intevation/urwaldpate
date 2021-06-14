@@ -6,12 +6,12 @@
       max-width="485">
       <v-card>
         <v-card-title class="headline">
-          Ja, ich werde Urwald-Pate für {{ hektar }} Hektar!
+          Ja, ich werde Wildnis-Pate für {{ hektar }} Hektar!
         </v-card-title>
-
+<!--Anklamer Stadtbruch.-->
         <v-card-text>
           Ich schütze mit
-          <strong>{{ betrag }} Euro monatlich</strong> Urwald von morgen im {{ gebiet }}.
+          <strong>{{ betrag }} Euro monatlich</strong> Wildnis morgen im {{ gebiet }}.
         </v-card-text>
 
         <v-card-actions class="justify-center">
