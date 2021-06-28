@@ -15,7 +15,6 @@
           fab
           small
           color="error"
-          v-bind="attrs"
           @click="snackbar = false">
           <v-icon dark>
             X
@@ -70,33 +69,12 @@ export default {
     selectedFeatures: [],
     donated: [],
     map: {},
-    //https://github.com/esri/esri-leaflet#terms
-    esri: L.tileLayer(
-      "http://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-      {
-        attribution:
-          '&copy;<a href="http://www.esri.com/">Esri</a>i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
-        maxZoom: 18
-      }
-    ),
     osm: new L.TileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       minZoom: 8,
       maxZoom: 18,
       attribution:
         'Map data © <a href="https://openstreetmap.org">OpenStreetMap</a> contributors, '+process.env.VUE_APP_GIT_HASH
     }),
-    satellite: L.tileLayer.wms("https://tiles.maps.eox.at/?", {
-      layers: "s2cloudless_3857",
-      attribution:
-        '<a href="https://s2maps.eu" target="_blank">Sentinel-2 cloudless - https://s2maps.eu</a> by <a href="https://eox.at/" target="_blank">EOX IT Services GmbH</a> (Contains modified Copernicus Sentinel data 2017 & 2018)'
-    }),
-    //#ba3b76
-    //#b54076
-    //#d0b6d0
-    //#d38231
-    //#13c4be
-    //#e87a05
-    //#31a354
     donatedStyle: { fillOpacity: 0.5, fillColor: "#31a354" },
     defaultStyle: {
       color: "grey",
@@ -139,7 +117,6 @@ export default {
           }.bind(this)
         });
 
-        // var bar = new Promise((resolve, reject) => {
         var bar = new Promise(resolve => {
           this.list.forEach((value, index, array) => {
             this.ebene.addData(value);
@@ -163,7 +140,6 @@ export default {
       let param;
       param = searchParams.get("gebiet");
       if (param != ""){
-      // this.fetchData();
       this.fetchDataFromFirebase(param);
       this.gebiet=param;
       } else {
@@ -199,11 +175,7 @@ export default {
         prefix: false
       })
     );
-
     this.osm.addTo(this.map);
-    // map.on("moveend", function() {
-    //   console.log(map.getCenter());
-    // });
   },
   methods: {
     fetchDataFromFirebase(param) {
@@ -338,10 +310,6 @@ export default {
         if (feature.properties.PatenID === 1) {
           that.donated.push(feature);
         }
-        //if (feature.properties && feature.properties.RasterID) {
-        //  layer.bindTooltip(String(feature.properties.RasterID));
-        //}
-
         // Load the default style.
         layer.setStyle(defaultStyle);
 

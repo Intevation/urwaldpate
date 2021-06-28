@@ -8,7 +8,6 @@
         <v-card-title class="headline">
           Ja, ich werde Wildnis-Pate für {{ hektar }} Hektar!
         </v-card-title>
-<!--Anklamer Stadtbruch.-->
         <v-card-text>
           Ich schütze mit
           <strong>{{ betrag }} Euro monatlich</strong> Wildnis morgen im {{ gebiet }}.
