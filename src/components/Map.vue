@@ -3,7 +3,8 @@
     <Popup
       :dialog.sync="dialog"
       :gebiet="gebiet"
-      :selected-features.sync="selectedFeatures" />
+      :selected-features.sync="selectedFeatures"
+      :form-url="formURL" />
     <div>
       <v-snackbar
         v-model="snackbar"
@@ -62,6 +63,7 @@ export default {
     dbname: process.env.VUE_APP_dbname,
     snackbar: false,
     gebiet: "",
+    formURL: "https://naturerbe.nabu.de/spenden-und-helfen/patenschaften/include/formular/urwald.html?hektar-id=",
     db: {},
     list: [],
     featuresRef: {},

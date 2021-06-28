@@ -47,7 +47,8 @@ export default {
     // Old style: function () { return [] }. ES6:
     default: ()=>[]
     },
-    gebiet: {type: String, required: true, default: ""}
+    gebiet: {type: String, required: true, default: ""},
+    formUrl: {type: String, required: true, default: ""}
     },
   data: ()=>({
   }),
@@ -84,8 +85,7 @@ export default {
       this.$emit("update:dialog", !this.dialog);
     },
     klick() {
-      window.open(
-        "https://naturerbe.nabu.de/spenden-und-helfen/patenschaften/include/formular/urwald.html?hektar-id="+
+      window.open(this.formURL +
           this.hektarIDs +
           "&betrag=" +
           this.betrag
