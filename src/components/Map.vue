@@ -100,7 +100,6 @@ export default {
   watch: {
     list: {
       handler: function() {
-        let area_comp=this.gebiet
         if (this.ebene instanceof L.Layer) {
           this.ebene.remove();
         }
@@ -109,8 +108,8 @@ export default {
             this.defaultStyle,
             this.highlightStyle
           ),
-          filter: function(feature) {
-            if (feature.properties.Gebiet === area_comp) return true;
+          filter: function() {
+            return true;
           },
           style: function(feature) {
             if (feature.properties.PatenID != 0) {
@@ -184,10 +183,11 @@ export default {
       firebase.initializeApp(this.firebaseConfig);
       this.db = firebase.database();
       //this.rasterRef = firebase.database().ref();
-      this.formURL = this.db.ref(`/${this.dbname}/${param}/formURL`);
       this.featuresRef = this.db.ref(`/${this.dbname}/${param}/features`);
-      this.list = this.getSynchronizedArray(this.featuresRef); // TODO
+      this.list = this.getSynchronizedArray(this.featuresRef);
       this.wrapLocalCrudOps(this.selectedFeatures, this.featuresRef);
+      this.db.ref(`/${this.dbname}/${param}`).child("formURL")
+        .once('value', (v) =>{ this.formURL = v.val();});
     },
     syncChanges(list, ref) {
       function positionFor(list, key) {

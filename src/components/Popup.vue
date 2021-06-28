@@ -85,11 +85,7 @@ export default {
       this.$emit("update:dialog", !this.dialog);
     },
     klick() {
-      window.open(this.formURL +
-          this.hektarIDs +
-          "&betrag=" +
-          this.betrag
-      );
+      window.open(this.formUrl + this.hektarIDs + "&betrag=" + this.betrag);
       this.$emit("update:dialog", !this.dialog);
       this.selectedFeaturesLocal=[];
     }
