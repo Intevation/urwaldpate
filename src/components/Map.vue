@@ -184,9 +184,9 @@ export default {
       firebase.initializeApp(this.firebaseConfig);
       this.db = firebase.database();
       //this.rasterRef = firebase.database().ref();
-      this.featuresRef = this.db.ref(`/${this.dbname}/features`);
-      this.list = this.getSynchronizedArray(
-        this.featuresRef.orderByChild("properties/Gebiet").equalTo(param));
+      this.formURL = this.db.ref(`/${this.dbname}/${param}/formURL`);
+      this.featuresRef = this.db.ref(`/${this.dbname}/${param}/features`);
+      this.list = this.getSynchronizedArray(this.featuresRef); // TODO
       this.wrapLocalCrudOps(this.selectedFeatures, this.featuresRef);
     },
     syncChanges(list, ref) {
