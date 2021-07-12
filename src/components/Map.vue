@@ -60,7 +60,7 @@ export default {
       messagingSenderId: process.env.VUE_APP_messagingSenderId,
       appId: process.env.VUE_APP_messagingSenderId
     },
-    dbname: process.env.VUE_APP_dbname,
+    dbname: process.env.VUE_APP_dbname || "biesenthalerbecken",
     snackbar: false,
     gebiet: "",
     formURL: "https://naturerbe.nabu.de/spenden-und-helfen/patenschaften/include/formular/urwald.html?hektar-id=",
@@ -100,6 +100,8 @@ export default {
   watch: {
     list: {
       handler: function() {
+        const area_comp = this.gebiet;
+        const dbname = this.dbname;
         if (this.ebene instanceof L.Layer) {
           this.ebene.remove();
         }
@@ -108,8 +110,9 @@ export default {
             this.defaultStyle,
             this.highlightStyle
           ),
-          filter: function() {
-            return true;
+          filter: function(feature) {
+            if (dbname !== "biesenthalerbecken") return true;
+            else if (feature.properties.Gebiet === area_comp) return true;
           },
           style: function(feature) {
             if (feature.properties.PatenID != 0) {
@@ -182,12 +185,18 @@ export default {
     fetchDataFromFirebase(param) {
       firebase.initializeApp(this.firebaseConfig);
       this.db = firebase.database();
-      //this.rasterRef = firebase.database().ref();
-      this.featuresRef = this.db.ref(`/${this.dbname}/${param}/features`);
-      this.list = this.getSynchronizedArray(this.featuresRef);
-      this.wrapLocalCrudOps(this.selectedFeatures, this.featuresRef);
-      this.db.ref(`/${this.dbname}/${param}`).child("formURL")
-        .once('value', (v) =>{ this.formURL = v.val();});
+      if (this.dbname === "biesenthalerbecken") {
+        this.featuresRef = this.db.ref("/biesenthalerbecken/features");
+        this.list = this.getSynchronizedArray(
+          this.featuresRef.orderByChild("properties/Gebiet").equalTo(param));
+        this.wrapLocalCrudOps(this.selectedFeatures, this.featuresRef);
+      } else {
+        this.featuresRef = this.db.ref(`/${this.dbname}/${param}/features`);
+        this.list = this.getSynchronizedArray(this.featuresRef);
+        this.wrapLocalCrudOps(this.selectedFeatures, this.featuresRef);
+        this.db.ref(`/${this.dbname}/${param}`).child("formURL")
+          .once('value', (v) =>{ this.formURL = v.val();});
+      }
     },
     syncChanges(list, ref) {
       function positionFor(list, key) {
