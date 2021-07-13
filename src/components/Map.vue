@@ -3,7 +3,8 @@
     <Popup
       :dialog.sync="dialog"
       :gebiet="gebiet"
-      :selected-features.sync="selectedFeatures" />
+      :selected-features.sync="selectedFeatures"
+      :form-url="formURL" />
     <div>
       <v-snackbar
         v-model="snackbar"
@@ -15,7 +16,6 @@
           fab
           small
           color="error"
-          v-bind="attrs"
           @click="snackbar = false">
           <v-icon dark>
             X
@@ -60,8 +60,10 @@ export default {
       messagingSenderId: process.env.VUE_APP_messagingSenderId,
       appId: process.env.VUE_APP_messagingSenderId
     },
+    dbname: process.env.VUE_APP_dbname || "biesenthalerbecken",
     snackbar: false,
     gebiet: "",
+    formURL: "https://naturerbe.nabu.de/spenden-und-helfen/patenschaften/include/formular/urwald.html?hektar-id=",
     db: {},
     list: [],
     featuresRef: {},
@@ -69,33 +71,12 @@ export default {
     selectedFeatures: [],
     donated: [],
     map: {},
-    //https://github.com/esri/esri-leaflet#terms
-    esri: L.tileLayer(
-      "http://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-      {
-        attribution:
-          '&copy;<a href="http://www.esri.com/">Esri</a>i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
-        maxZoom: 18
-      }
-    ),
     osm: new L.TileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       minZoom: 8,
       maxZoom: 18,
       attribution:
         'Map data © <a href="https://openstreetmap.org">OpenStreetMap</a> contributors, '+process.env.VUE_APP_GIT_HASH
     }),
-    satellite: L.tileLayer.wms("https://tiles.maps.eox.at/?", {
-      layers: "s2cloudless_3857",
-      attribution:
-        '<a href="https://s2maps.eu" target="_blank">Sentinel-2 cloudless - https://s2maps.eu</a> by <a href="https://eox.at/" target="_blank">EOX IT Services GmbH</a> (Contains modified Copernicus Sentinel data 2017 & 2018)'
-    }),
-    //#ba3b76
-    //#b54076
-    //#d0b6d0
-    //#d38231
-    //#13c4be
-    //#e87a05
-    //#31a354
     donatedStyle: { fillOpacity: 0.5, fillColor: "#31a354" },
     defaultStyle: {
       color: "grey",
@@ -119,7 +100,8 @@ export default {
   watch: {
     list: {
       handler: function() {
-        let area_comp=this.gebiet
+        const area_comp = this.gebiet;
+        const dbname = this.dbname;
         if (this.ebene instanceof L.Layer) {
           this.ebene.remove();
         }
@@ -129,7 +111,8 @@ export default {
             this.highlightStyle
           ),
           filter: function(feature) {
-            if (feature.properties.Gebiet === area_comp) return true;
+            if (dbname !== "biesenthalerbecken") return true;
+            else if (feature.properties.Gebiet === area_comp) return true;
           },
           style: function(feature) {
             if (feature.properties.PatenID != 0) {
@@ -138,7 +121,6 @@ export default {
           }.bind(this)
         });
 
-        // var bar = new Promise((resolve, reject) => {
         var bar = new Promise(resolve => {
           this.list.forEach((value, index, array) => {
             this.ebene.addData(value);
@@ -162,7 +144,6 @@ export default {
       let param;
       param = searchParams.get("gebiet");
       if (param != ""){
-      // this.fetchData();
       this.fetchDataFromFirebase(param);
       this.gebiet=param;
       } else {
@@ -198,20 +179,24 @@ export default {
         prefix: false
       })
     );
-
     this.osm.addTo(this.map);
-    // map.on("moveend", function() {
-    //   console.log(map.getCenter());
-    // });
   },
   methods: {
     fetchDataFromFirebase(param) {
       firebase.initializeApp(this.firebaseConfig);
       this.db = firebase.database();
-      //this.rasterRef = firebase.database().ref();
-      this.featuresRef = this.db.ref("/biesenthalerbecken/features");
-      this.list = this.getSynchronizedArray(this.featuresRef.orderByChild("properties/Gebiet").equalTo(param));
-      this.wrapLocalCrudOps(this.selectedFeatures, this.featuresRef);
+      if (this.dbname === "biesenthalerbecken") {
+        this.featuresRef = this.db.ref("/biesenthalerbecken/features");
+        this.list = this.getSynchronizedArray(
+          this.featuresRef.orderByChild("properties/Gebiet").equalTo(param));
+        this.wrapLocalCrudOps(this.selectedFeatures, this.featuresRef);
+      } else {
+        this.featuresRef = this.db.ref(`/${this.dbname}/${param}/features`);
+        this.list = this.getSynchronizedArray(this.featuresRef);
+        this.wrapLocalCrudOps(this.selectedFeatures, this.featuresRef);
+        this.db.ref(`/${this.dbname}/${param}`).child("formURL")
+          .once('value', (v) =>{ this.formURL = v.val();});
+      }
     },
     syncChanges(list, ref) {
       function positionFor(list, key) {
@@ -336,10 +321,6 @@ export default {
         if (feature.properties.PatenID === 1) {
           that.donated.push(feature);
         }
-        //if (feature.properties && feature.properties.RasterID) {
-        //  layer.bindTooltip(String(feature.properties.RasterID));
-        //}
-
         // Load the default style.
         layer.setStyle(defaultStyle);
 

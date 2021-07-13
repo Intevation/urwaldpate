@@ -6,12 +6,11 @@
       max-width="485">
       <v-card>
         <v-card-title class="headline">
-          Ja, ich werde Urwald-Pate für {{ hektar }} Hektar!
+          Ja, ich werde Wildnis-Pate für {{ hektar }} Hektar!
         </v-card-title>
-
         <v-card-text>
           Ich schütze mit
-          <strong>{{ betrag }} Euro monatlich</strong> Urwald von morgen im {{ gebiet }}.
+          <strong>{{ betrag }} Euro monatlich</strong> Wildnis morgen im {{ gebiet }}.
         </v-card-text>
 
         <v-card-actions class="justify-center">
@@ -48,7 +47,8 @@ export default {
     // Old style: function () { return [] }. ES6:
     default: ()=>[]
     },
-    gebiet: {type: String, required: true, default: ""}
+    gebiet: {type: String, required: true, default: ""},
+    formUrl: {type: String, required: true, default: ""}
     },
   data: ()=>({
   }),
@@ -85,12 +85,7 @@ export default {
       this.$emit("update:dialog", !this.dialog);
     },
     klick() {
-      window.open(
-        "https://naturerbe.nabu.de/spenden-und-helfen/patenschaften/include/formular/urwald.html?hektar-id="+
-          this.hektarIDs +
-          "&betrag=" +
-          this.betrag
-      );
+      window.open(this.formUrl + this.hektarIDs + "&betrag=" + this.betrag);
       this.$emit("update:dialog", !this.dialog);
       this.selectedFeaturesLocal=[];
     }
